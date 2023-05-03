@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { CDN_IMG_URL, REST_DATA_API_URL } from '../config';
+import { CDN_IMG_URL, REST_DATA_API_URL, REST_NEW_DATA_API_URL } from '../config';
 import starIcon from './../../assets/star-icon.png';
 import { useDispatch, useSelector } from "react-redux";
 import { addItem, incrementItem, decrementItem, removeItem } from "../utils/cartSlice";
@@ -33,9 +33,13 @@ const RestaurantDetails = () => {
     const [isVegFlag, setIsVegFlag] = useState(false);
     const dispatch = useDispatch();
     const cartItems = useSelector(store => store.cart.items)
+    const location = useSelector(store => store.app)
     async function getRestaurantInfo() {
-        const data = await fetch(`${REST_DATA_API_URL}${id}`)
+        // const data = await fetch(`${REST_DATA_API_URL}${id}`)
+        const data = await fetch(`${REST_NEW_DATA_API_URL}&lat=${location.latitude}&lng=${location.longitude}&restaurantId=${id}`)
         const json = await data.json();
+        console.log("MENU DETAILS", json);
+        // TODO: FIX BELOW LOGIC TO USE NEW API DATA
         setRestData(json.data);//Object.values(restData?.menu?.items)
         setMenuData(Object.values(json.data?.menu?.items));
         setFilterMenuData(Object.values(json.data?.menu?.items));
