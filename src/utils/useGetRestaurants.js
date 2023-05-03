@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { REST_API_OFFSET_URL, REST_API_SEARCH_URL, REST_API_URL } from '../config';
+import { useDispatch } from 'react-redux';
+import { changeGeoLocation } from './appSlice';
 const useGetRestaurants = () => {
     const [restaurantList, setRestaurantList] = useState([]);
     const [filteredRestList, setFilteredRestList] = useState([]);
@@ -9,10 +11,12 @@ const useGetRestaurants = () => {
     const [loading, setLoading] = useState(true);
     const [hasMore, setHasMore] = useState(true);
     const [errMsg, setErrMsg] = useState("");
+    const dispatch = useDispatch();
     async function getRestaurants() {
         setLoading(true);
         navigator.geolocation.getCurrentPosition(async (position) => {
             try {
+                dispatch(changeGeoLocation({ latitude: position.coords.latitude, longitude: position.coords.longitude }))
                 setGeolocation({ latitude: position.coords.latitude, longitude: position.coords.longitude });
                 const data = await fetch(`${REST_API_URL}&lat=${position.coords.latitude}&lng=${position.coords.longitude}`);
                 const json = await data.json();
