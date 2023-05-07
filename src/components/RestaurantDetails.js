@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { CDN_IMG_URL, REST_DATA_API_URL } from '../config';
+import { CDN_IMG_URL, REST_DATA_API_URL, REST_NEW_DATA_API_URL } from '../config';
 import starIcon from './../../assets/star-icon.png';
 import { useDispatch, useSelector } from "react-redux";
 import { addItem, incrementItem, decrementItem, removeItem } from "../utils/cartSlice";
@@ -16,12 +16,80 @@ const ImageRenderer = ({ item }) => {
             <div style={{ display: loading ? "none" : "block" }}>
                 <img
                     className=" h-[5rem] w-[5rem] object-fill object-center"
-                    src={CDN_IMG_URL + item?.cloudinaryImageId}
+                    src={CDN_IMG_URL + item?.imageId}
                     alt="dish-image"
                     onLoad={() => setLoading(false)}
                 />
             </div>
         </>
+    )
+}
+const SubMenuItem = ({ menu_item, cartItems, removeFromCart, addToCart, incrementCount }) => {
+    return (
+        menu_item?.id &&
+        <div className="flex justify-between m-2 ml-6 gap-1 items-center w-[44%] border shadow-md " key={menu_item?.id}>
+            <div className="item-name flex items-center gap-2">
+                <div className="h-fit relative w-[5vw]">
+                    {
+                        menu_item?.imageId ?
+                            <ImageRenderer item={menu_item} />
+                            :
+                            <div className="bg-gray-200 h-[5rem] w-[5rem] flex justify-center items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                                    <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                    }
+                    {
+                        menu_item?.isVeg ?
+                            <span className="absolute top-1 right-1 h-4 w-4 border border-green-400 flex justify-center items-center">
+                                <span className="h-2 w-2 p-1 rounded-full bg-green-400"></span>
+                            </span> :
+                            <span className="absolute top-1 right-1 h-4 w-4 border border-red-400 flex justify-center items-center">
+                                <span className="h-2 w-2 p-1 rounded-full bg-red-400"></span>
+                            </span>
+                    }
+                    {
+                        cartItems?.find(({ id }) => id === menu_item.id)
+                            ?
+                            <div className="bottom-[-10%] absolute w-full flex justify-center">
+                                <div className="flex gap-1 py-1 px-2 justify-center items-center w-fit bg-green-200">
+                                    <span className="cursor-pointer" onClick={() => removeFromCart(menu_item)}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                                            <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm3 10.5a.75.75 0 000-1.5H9a.75.75 0 000 1.5h6z" clipRule="evenodd" />
+                                        </svg>
+                                    </span>
+                                    <span className="text-sm">{cartItems.find(({ id }) => id === menu_item.id).count}</span>
+                                    <span className="cursor-pointer" onClick={() => incrementCount(menu_item)}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                                            <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 9a.75.75 0 00-1.5 0v2.25H9a.75.75 0 000 1.5h2.25V15a.75.75 0 001.5 0v-2.25H15a.75.75 0 000-1.5h-2.25V9z" clipRule="evenodd" />
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
+                            :
+                            <div className="flex gap-1 py-1 justify-center bottom-[-18%] absolute w-full">
+                                <span className="bg-green-200 py-[0.6] px-2" onClick={() => addToCart(menu_item)} data-testid="addMenuItem">
+                                    <button className="text-sm font-semibold">ADD</button>
+                                </span>
+                            </div>
+                    }
+                </div>
+                <div className="flex flex-col w-[18vw] justify-start gap-1">
+                    <span>
+                        {menu_item?.name}
+                    </span>
+                    {/* {
+                                                        menu_item?.isBestSeller && <span className="font-light text-xs border px-[0.3rem] py-[0.1rem] rounded-full bg-[#FAFFD1] w-fit">Bestseller</span>
+                                                    } */}
+                </div>
+            </div>
+            <div className="pr-4 flex gap-4 items-center">
+                <span>
+                    ₹{menu_item?.price ? (menu_item?.price === 0 ? menu_item.defaultPrice / 100 : menu_item.price / 100) : menu_item.defaultPrice / 100}
+                </span>
+            </div>
+        </div>
     )
 }
 const RestaurantDetails = () => {
@@ -30,15 +98,26 @@ const RestaurantDetails = () => {
     const [menuData, setMenuData] = useState([]);
     const [filterMenueData, setFilterMenuData] = useState([]);
     const [searchMenu, setSearchMenu] = useState("");
+    const [isFilterEmpty, setIsFilterEmpty] = useState(false);
     const [isVegFlag, setIsVegFlag] = useState(false);
     const dispatch = useDispatch();
     const cartItems = useSelector(store => store.cart.items)
+    const location = useSelector(store => store.app)
     async function getRestaurantInfo() {
-        const data = await fetch(`${REST_DATA_API_URL}${id}`)
+        // const data = await fetch(`${REST_DATA_API_URL}${id}`)
+        const data = await fetch(`${REST_NEW_DATA_API_URL}&lat=${location.latitude}&lng=${location.longitude}&restaurantId=${id}`)
         const json = await data.json();
-        setRestData(json.data);//Object.values(restData?.menu?.items)
-        setMenuData(Object.values(json.data?.menu?.items));
-        setFilterMenuData(Object.values(json.data?.menu?.items));
+        console.log("MENU DETAILS", json);
+        // TODO: FIX BELOW LOGIC TO USE NEW API DATA
+        setRestData(json.data.cards[0].card.card.info);//json.data
+        console.log("Restaurant data", json.data.cards[0].card.card.info)
+        console.log("menu_data_json data", json.data?.cards[2]?.groupedCard?.cardGroupMap?.REGULAR?.cards?.slice(1))
+        const menu_data_json = json.data?.cards[2]?.groupedCard?.cardGroupMap?.REGULAR?.cards?.slice(1)
+        setMenuData(menu_data_json);
+        setFilterMenuData(menu_data_json);
+        // setRestData(Object.values(restData?.menu?.items));
+        // setMenuData(Object.values(json.data?.menu?.items));
+        // setFilterMenuData(Object.values(json.data?.menu?.items));
     }
     useEffect(() => {
         getRestaurantInfo();
@@ -58,16 +137,68 @@ const RestaurantDetails = () => {
 
     const HandleSearchMenu = (e) => {
         setSearchMenu(e.target.value);
-        const filteredMenu = menuData?.filter(menu_item => menu_item?.name?.toLowerCase().includes(e.target.value.toLowerCase()));
+        // Filter menu as per search query
+        const filteredMenu = []
+        menuData?.forEach((_menu_item, i) => {
+            const filteredCards = _menu_item?.card?.card?.itemCards?.filter((item) => {
+                return item?.card?.info?.name?.toLowerCase().includes(e.target.value.toLowerCase())
+            })
+            if (filteredCards) {
+                // Create an object similar to menu item and with filtered items 
+                filteredMenu.push({
+                    ..._menu_item,
+                    card: {
+                        ..._menu_item.card,
+                        card: {
+                            ..._menu_item.card.card,
+                            itemCards: filteredCards
+                        }
+                    }
+                });
+            }
+        });
         setFilterMenuData(filteredMenu);
+        let flag = true;
+        filteredMenu.forEach((menu) => {
+            if (menu?.card?.card?.itemCards?.length > 0) {
+                flag = false;
+            }
+        })
+        // To show error msg
+        flag ? setIsFilterEmpty(true) : setIsFilterEmpty(false);
     }
 
     const HandleVegOnlyToggle = () => {
         if (isVegFlag) {
             setFilterMenuData(menuData);
         } else {
-            const filteredMenu = menuData?.filter(menu_item => menu_item?.isVeg);
+            const filteredMenu = []
+            menuData?.forEach((_menu_item, i) => {
+                // Filter only veg dishes using isVeg flag
+                const filteredCards = _menu_item?.card?.card?.itemCards?.filter((item) => {
+                    return item?.card?.info?.isVeg === 1
+                })
+                if (filteredCards) {
+                    // Create an object similar to menu item and with filtered items 
+                    filteredMenu.push({
+                        ..._menu_item,
+                        card: {
+                            ..._menu_item.card,
+                            card: {
+                                ..._menu_item.card.card,
+                                itemCards: filteredCards
+                            }
+                        }
+                    });
+                }
+            });
             setFilterMenuData(filteredMenu);
+            let flag = true;
+            filteredMenu.forEach((menu) => {
+                if (menu?.card?.card?.itemCards?.length > 0) {
+                    flag = false;
+                }
+            })
         }
         setIsVegFlag(!isVegFlag);
     }
@@ -114,7 +245,7 @@ const RestaurantDetails = () => {
                                     <img src={starIcon} alt="star-icon" className="h-5" /> {restData?.avgRating}
                                 </div>
                                 <div className="cost-for-two">
-                                    {restData?.costForTwoMsg}
+                                    {restData?.costForTwoMessage}
                                 </div>
                             </div>
                         </div>
@@ -140,78 +271,33 @@ const RestaurantDetails = () => {
                             </span>
                         </span>
                     </div>
-                    <div className="pl-2 flex flex-wrap justify-around gap-3 mt-3">
+                    <div className="pl-2 flex flex-wrap justify-start gap-3 mt-3">
                         {
-                            (filterMenueData.length === 0 && searchMenu.length > 0) &&
+                            (searchMenu.length > 0 && isFilterEmpty) &&
                             <h1 className="text-center text-red-400 p-5">
                                 We couldn’t find any items matching your search. <br />Please try a new keyword.
                             </h1>
                         }
-                        {filterMenueData?.map((menu_item) => {
+                        {filterMenueData?.map((_menu_item) => {
+                            if (!_menu_item.card.card.title || !_menu_item?.card?.card?.itemCards || _menu_item?.card?.card?.itemCards?.length === 0) {
+                                return null
+                            }
                             return (
-                                <div className="flex justify-between m-2 gap-1 items-center w-[44%] border shadow-md " key={menu_item.id}>
-                                    <div className="item-name flex items-center gap-2">
-                                        <div className="h-fit relative w-[5vw]">
-                                            {
-                                                menu_item?.cloudinaryImageId ?
-                                                    <ImageRenderer item={menu_item} />
-                                                    :
-                                                    <div className="bg-gray-200 h-[5rem] w-[5rem] flex justify-center items-center">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                                                            <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
-                                                        </svg>
-                                                    </div>
-                                            }
-                                            {
-                                                menu_item.isVeg ?
-                                                    <span className="absolute top-1 right-1 h-4 w-4 border border-green-400 flex justify-center items-center">
-                                                        <span className="h-2 w-2 p-1 rounded-full bg-green-400"></span>
-                                                    </span> :
-                                                    <span className="absolute top-1 right-1 h-4 w-4 border border-red-400 flex justify-center items-center">
-                                                        <span className="h-2 w-2 p-1 rounded-full bg-red-400"></span>
-                                                    </span>
-                                            }
-                                            {
-                                                cartItems.find(({ id }) => id === menu_item.id)
-                                                    ?
-                                                    <div className="bottom-[-10%] absolute w-full flex justify-center">
-                                                        <div className="flex gap-1 py-1 px-2 justify-center items-center w-fit bg-green-200">
-                                                            <span className="cursor-pointer" onClick={() => removeFromCart(menu_item)}>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                                                                    <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm3 10.5a.75.75 0 000-1.5H9a.75.75 0 000 1.5h6z" clipRule="evenodd" />
-                                                                </svg>
-                                                            </span>
-                                                            <span className="text-sm">{cartItems.find(({ id }) => id === menu_item.id).count}</span>
-                                                            <span className="cursor-pointer" onClick={() => incrementCount(menu_item)}>
-                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                                                                    <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 9a.75.75 0 00-1.5 0v2.25H9a.75.75 0 000 1.5h2.25V15a.75.75 0 001.5 0v-2.25H15a.75.75 0 000-1.5h-2.25V9z" clipRule="evenodd" />
-                                                                </svg>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    :
-                                                    <div className="flex gap-1 py-1 justify-center bottom-[-18%] absolute w-full">
-                                                        <span className="bg-green-200 py-[0.6] px-2" onClick={() => addToCart(menu_item)} data-testid="addMenuItem">
-                                                            <button className="text-sm font-semibold">ADD</button>
-                                                        </span>
-                                                    </div>
-                                            }
-                                        </div>
-                                        <div className="flex flex-col w-[18vw] justify-start gap-1">
-                                            <span>
-                                                {menu_item.name}
-                                            </span>
-                                            {
-                                                menu_item.isBestSeller && <span className="font-light text-xs border px-[0.3rem] py-[0.1rem] rounded-full bg-[#FAFFD1] w-fit">Bestseller</span>
-                                            }
-                                        </div>
+                                <>
+                                    <div className="bg-[#A1FFCE] text-black font-semibold text-center py-2 text-md w-full">
+                                        {_menu_item.card.card.title} - {_menu_item?.card?.card?.itemCards?.length}
                                     </div>
-                                    <div className="pr-4 flex gap-4 items-center">
-                                        <span>
-                                            ₹{menu_item.price === 0 ? menu_item.defaultPrice / 100 : menu_item.price / 100}
-                                        </span>
-                                    </div>
-                                </div>
+                                    {
+                                        _menu_item?.card?.card?.itemCards?.map((menu_item) => {
+                                            menu_item = menu_item.card.info;
+                                            // TODO: Fix issues with filter update delete in menu bcoz of new API
+                                            return (
+                                                <SubMenuItem menu_item={menu_item} cartItems={cartItems} key={menu_item.id} addToCart={addToCart} incrementCount={incrementCount} removeFromCart={removeFromCart} />
+                                            )
+                                        })
+                                    }
+                                    <br />
+                                </>
                             )
                         })}
                     </div>
