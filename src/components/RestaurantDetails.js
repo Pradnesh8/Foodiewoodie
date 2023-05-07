@@ -27,7 +27,7 @@ const ImageRenderer = ({ item }) => {
 const SubMenuItem = ({ menu_item, cartItems, removeFromCart, addToCart, incrementCount }) => {
     return (
         menu_item?.id &&
-        <div className="flex justify-between m-2 gap-1 items-center w-[44%] border shadow-md " key={menu_item?.id}>
+        <div className="flex justify-between m-2 ml-6 gap-1 items-center w-[44%] border shadow-md " key={menu_item?.id}>
             <div className="item-name flex items-center gap-2">
                 <div className="h-fit relative w-[5vw]">
                     {
@@ -218,7 +218,7 @@ const RestaurantDetails = () => {
                             </span>
                         </span>
                     </div>
-                    <div className="pl-2 flex flex-wrap justify-around gap-3 mt-3">
+                    <div className="pl-2 flex flex-wrap justify-start gap-3 mt-3">
                         {
                             (filterMenueData.length === 0 && searchMenu.length > 0) &&
                             <h1 className="text-center text-red-400 p-5">
@@ -226,10 +226,13 @@ const RestaurantDetails = () => {
                             </h1>
                         }
                         {filterMenueData?.map((_menu_item) => {
+                            if (!_menu_item.card.card.title || !_menu_item?.card?.card?.itemCards || _menu_item?.card?.card?.itemCards?.length === 0) {
+                                return null
+                            }
                             return (
                                 <>
                                     <div className="bg-[#A1FFCE] text-black font-semibold text-center py-2 text-md w-full">
-                                        {_menu_item.card.card.title}
+                                        {_menu_item.card.card.title} - {_menu_item?.card?.card?.itemCards?.length}
                                     </div>
                                     {
                                         _menu_item?.card?.card?.itemCards?.map((menu_item) => {
