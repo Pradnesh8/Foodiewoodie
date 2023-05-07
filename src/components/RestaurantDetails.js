@@ -86,7 +86,7 @@ const SubMenuItem = ({ menu_item, cartItems, removeFromCart, addToCart, incremen
             </div>
             <div className="pr-4 flex gap-4 items-center">
                 <span>
-                    ₹{menu_item?.price && (menu_item?.price === 0 ? menu_item.defaultPrice / 100 : menu_item.price / 100)}
+                    ₹{menu_item?.price ? (menu_item?.price === 0 ? menu_item.defaultPrice / 100 : menu_item.price / 100) : menu_item.defaultPrice / 100}
                 </span>
             </div>
         </div>
@@ -98,6 +98,7 @@ const RestaurantDetails = () => {
     const [menuData, setMenuData] = useState([]);
     const [filterMenueData, setFilterMenuData] = useState([]);
     const [searchMenu, setSearchMenu] = useState("");
+    const [isFilterEmpty, setIsFilterEmpty] = useState(false);
     const [isVegFlag, setIsVegFlag] = useState(false);
     const dispatch = useDispatch();
     const cartItems = useSelector(store => store.cart.items)
@@ -136,16 +137,68 @@ const RestaurantDetails = () => {
 
     const HandleSearchMenu = (e) => {
         setSearchMenu(e.target.value);
-        const filteredMenu = menuData?.filter(menu_item => menu_item?.name?.toLowerCase().includes(e.target.value.toLowerCase()));
+        // Filter menu as per search query
+        const filteredMenu = []
+        menuData?.forEach((_menu_item, i) => {
+            const filteredCards = _menu_item?.card?.card?.itemCards?.filter((item) => {
+                return item?.card?.info?.name?.toLowerCase().includes(e.target.value.toLowerCase())
+            })
+            if (filteredCards) {
+                // Create an object similar to menu item and with filtered items 
+                filteredMenu.push({
+                    ..._menu_item,
+                    card: {
+                        ..._menu_item.card,
+                        card: {
+                            ..._menu_item.card.card,
+                            itemCards: filteredCards
+                        }
+                    }
+                });
+            }
+        });
         setFilterMenuData(filteredMenu);
+        let flag = true;
+        filteredMenu.forEach((menu) => {
+            if (menu?.card?.card?.itemCards?.length > 0) {
+                flag = false;
+            }
+        })
+        // To show error msg
+        flag ? setIsFilterEmpty(true) : setIsFilterEmpty(false);
     }
 
     const HandleVegOnlyToggle = () => {
         if (isVegFlag) {
             setFilterMenuData(menuData);
         } else {
-            const filteredMenu = menuData?.filter(menu_item => menu_item?.isVeg);
+            const filteredMenu = []
+            menuData?.forEach((_menu_item, i) => {
+                // Filter only veg dishes using isVeg flag
+                const filteredCards = _menu_item?.card?.card?.itemCards?.filter((item) => {
+                    return item?.card?.info?.isVeg === 1
+                })
+                if (filteredCards) {
+                    // Create an object similar to menu item and with filtered items 
+                    filteredMenu.push({
+                        ..._menu_item,
+                        card: {
+                            ..._menu_item.card,
+                            card: {
+                                ..._menu_item.card.card,
+                                itemCards: filteredCards
+                            }
+                        }
+                    });
+                }
+            });
             setFilterMenuData(filteredMenu);
+            let flag = true;
+            filteredMenu.forEach((menu) => {
+                if (menu?.card?.card?.itemCards?.length > 0) {
+                    flag = false;
+                }
+            })
         }
         setIsVegFlag(!isVegFlag);
     }
@@ -220,7 +273,7 @@ const RestaurantDetails = () => {
                     </div>
                     <div className="pl-2 flex flex-wrap justify-start gap-3 mt-3">
                         {
-                            (filterMenueData.length === 0 && searchMenu.length > 0) &&
+                            (searchMenu.length > 0 && isFilterEmpty) &&
                             <h1 className="text-center text-red-400 p-5">
                                 We couldn’t find any items matching your search. <br />Please try a new keyword.
                             </h1>
